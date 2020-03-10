@@ -3,6 +3,7 @@ package service
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	"github.com/ekr-paolo-carraro/go-jwt/domain"
 	_ "github.com/lib/pq"
@@ -17,7 +18,7 @@ type PostgresService struct {
 //InitDBService starts postgresql db connection and return err in case of failure
 func InitDBService() (*PostgresService, error) {
 
-	connection := "host=localhost port=5432 user=srvuser password=ekr dbname=test sslmode=disable"
+	connection := os.Getenv("DB_CONN")
 	db, err := sql.Open("postgres", connection)
 	if err != nil {
 		return nil, err

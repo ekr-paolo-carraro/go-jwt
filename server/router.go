@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -92,7 +93,7 @@ func (hr HandlerRouter) signupHandler(c *gin.Context) {
 
 func (hr HandlerRouter) generateToken(user domain.User) (string, error) {
 	var err error
-	var key string = "pc-key!"
+	var key string = os.Getenv("KEY")
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,
@@ -158,7 +159,7 @@ func (hr HandlerRouter) authMiddleware() gin.HandlerFunc {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Error on parse token")
 			}
-			return []byte("pc-key!"), nil
+			return []byte(os.Getenv("KEY")), nil
 		})
 
 		if err != nil {
