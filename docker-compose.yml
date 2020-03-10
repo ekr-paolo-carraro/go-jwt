@@ -1,0 +1,43 @@
+version: '3.5'
+
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: srvuser
+      POSTGRES_PASSWORD: ekr
+      POSTGRES_DB: test
+      PGDATA: /data/postgres
+    volumes:
+       - pgdata:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    depends_on:
+        - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: paolo.carraro@ekr.it
+      PGADMIN_DEFAULT_PASSWORD: ekrekr
+      PGADMIN_LISTEN_PORT: 5050
+    volumes:
+       - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:5050"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    pgdata:
+    pgadmin-data:
