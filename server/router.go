@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -53,8 +54,13 @@ func (hr HandlerRouter) parseUser(c *gin.Context) (*domain.User, error) {
 		return nil, errors.New("Email can't be empty")
 	}
 
-	if user.Password == "" {
-		return nil, errors.New("Email can't be empty")
+	re := regexp.MustCompile(`^[A-Za-z0-9._\-\+]+@[A-Za-z0-9._\-\+]+\..{2,}$`)
+	if ok := re.Match([]byte(user.Email)); ok == false {
+		return nil, errors.New("Email is incorrect")
+	}
+
+	if len(user.Password) < 8 {
+		return nil, errors.New("Password it's too short (min 8 char)")
 	}
 
 	return &user, nil
@@ -150,7 +156,7 @@ func (hr HandlerRouter) authMiddleware() gin.HandlerFunc {
 		if strings.Contains(authHeader, " ") {
 			token = strings.Split(authHeader, " ")[1]
 		} else {
-			hr.sendErrorMessage(c, http.StatusUnauthorized, "Error on auth not valid")
+			hr.sendErrorMessage(c, http.StatusUnauthorized, "Error: auth not valid")
 			c.Abort()
 			return
 		}
@@ -163,13 +169,13 @@ func (hr HandlerRouter) authMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			hr.sendErrorMessage(c, http.StatusUnauthorized, "Error on auth: "+err.Error())
+			hr.sendErrorMessage(c, http.StatusUnauthorized, "Error: auth not valid")
 			c.Abort()
 			return
 		}
 
 		if !parsedToken.Valid {
-			hr.sendErrorMessage(c, http.StatusUnauthorized, "Error on auth not valid")
+			hr.sendErrorMessage(c, http.StatusUnauthorized, "Error: auth not valid")
 			c.Abort()
 			return
 		}
